@@ -4,12 +4,15 @@ import os
 import time
 from urllib.parse import unquote
 
-app = Flask(__name__)
+app = Flask(__name__) # Pastikan nama variabelnya tetap 'app'
 
-# Buat folder temp jika belum ada
-TEMP_FOLDER = "temp_audio"
+# Gunakan folder /tmp karena Render mengizinkan penulisan file di sini
+TEMP_FOLDER = "/tmp/music_cache"
 if not os.path.exists(TEMP_FOLDER):
-    os.makedirs(TEMP_FOLDER)
+    try:
+        os.makedirs(TEMP_FOLDER)
+    except Exception as e:
+        print(f"Error creating folder: {e}")
 
 class MusicPlayer:
     def __init__(self):
