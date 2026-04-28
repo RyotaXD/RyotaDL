@@ -1,67 +1,12 @@
+import os
 from flask import Flask, render_template, request, jsonify, Response
 import yt_dlp
-import os
-import time
 from urllib.parse import unquote
 
-app = Flask(__name__) # Pastikan nama variabelnya tetap 'app'
+app = Flask(__name__)
 
-# Gunakan folder /tmp karena Render mengizinkan penulisan file di sini
-TEMP_FOLDER = "/tmp/music_cache"
-if not os.path.exists(TEMP_FOLDER):
-    try:
-        os.makedirs(TEMP_FOLDER)
-    except Exception as e:
-        print(f"Error creating folder: {e}")
-
-class MusicPlayer:
-    def __init__(self):
-        self.current_info = {}
-    
-    def search_youtube(self, query, max_results=10):
-        ydl_opts = {
-            'quiet': True,
-            'extract_flat': True,
-            'skip_download': True,
-        }
-        try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                # Menambahkan 'ytsearch' untuk hasil pencarian yang lebih baik
-                info = ydl.extract_info(f"ytsearch{max_results}:{query}", download=False)
-                return [{
-                    'title': entry.get('title', 'Unknown'),
-                    'id': entry['id'],
-                    'duration': entry.get('duration', 0),
-                    'uploader': entry.get('uploader', 'Unknown'),
-                    'url': f"https://www.youtube.com/watch?v={entry['id']}",
-                    'thumbnail': f"https://img.youtube.com/vi/{entry['id']}/mqdefault.jpg"
-                } for entry in info['entries']]
-        except Exception as e:
-            print(f"Search error: {e}")
-            return []
-
-    def get_audio_path(self, video_url):
-        """Mengambil info dan mendownload audio tanpa FFmpeg"""
-        timestamp = int(time.time())
-        # Simpan di folder temp dengan nama yang aman
-        outtmpl = os.path.join(TEMP_FOLDER, f'audio_{timestamp}.%(ext)s')
-        
-        ydl_opts = {
-            'format': 'bestaudio/best', # Ambil format terbaik (biasanya m4a/webm)
-            'outtmpl': outtmpl,
-            'quiet': True,
-            'no_warnings': True,
-        }
-        
-        try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(video_url, download=True)
-                filename = ydl.prepare_filename(info)
-                return True, info.get('title', 'Unknown'), filename
-        except Exception as e:
-            return False, str(e), None
-
-player = MusicPlayer()
+# Gunakan folder /tmp agar aman di Render
+TEMP_FOLDER = "/tmp"
 
 @app.route('/')
 def index():
@@ -70,38 +15,59 @@ def index():
 @app.route('/search', methods=['POST'])
 def search():
     data = request.json
-    query = data.get('query', '').strip()
-    if not query:
-        return jsonify({'error': 'Masukkan judul lagu!'})
-    results = player.search_youtube(query)
-    return jsonify({'results': results})
+    query = data.get('query', '')
+    ydl_opts = {'quiet': True, 'extract_flat': True, 'skip_download': True}
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(f"ytsearch10:{query}", download=False)
+            results = [{
+                'title': e.get('title', 'Unknown'),
+                'url': f"https://www.youtube.com/watch?v={e['id']}",
+                'id': e['id'],
+                'thumbnail': f"https://img.youtube.com/vi/{e['id']}/mqdefault.jpg",
+                'uploader': e.get('uploader', 'Unknown')
+            } for e in info['entries']]
+            return jsonify({'results': results})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/play', methods=['POST'])
 def play():
     data = request.json
     url = data.get('url')
+    # Nama file tetap simpel di /tmp
+    outtmpl = os.path.join(TEMP_FOLDER, 'audio.%(ext)s')
     
-    if not url:
-        return jsonify({'error': 'URL tidak valid'}), 400
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'outtmpl': outtmpl,
+        'quiet': True,
+        'noplaylist': True
+    }
     
-    # Pembersihan file lama (hapus file yang umurnya lebih dari 5 menit)
-    now = time.time()
-    for f in os.listdir(TEMP_FOLDER):
-        fpath = os.path.join(TEMP_FOLDER, f)
-        if os.stat(fpath).st_mtime < now - 300:
-            try:
-                os.remove(fpath)
-            except:
-                pass
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            filename = ydl.prepare_filename(info)
+            return jsonify({'success': True, 'filename': os.path.basename(filename), 'title': info.get('title')})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-    success, title, filepath = player.get_audio_path(url)
+@app.route('/stream/<filename>')
+def stream(filename):
+    filepath = os.path.join(TEMP_FOLDER, filename)
+    if not os.path.exists(filepath):
+        return "Not Found", 404
     
-    if success:
-        return jsonify({
-            'success': True,
-            'title': title,
-            'filename': os.path.basename(filepath)
-        })
+    def generate():
+        with open(filepath, 'rb') as f:
+            while chunk := f.read(1024*512):
+                yield chunk
+    
+    return Response(generate(), mimetype='audio/mpeg')
+
+if __name__ == '__main__':
+    app.run()        })
     else:
         return jsonify({'error': "Gagal mengunduh audio: " + filepath}), 400
 
