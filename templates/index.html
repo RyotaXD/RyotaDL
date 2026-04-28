@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ðŸŽµ RyotaXD Music</title>
+    <title>🎵 RyotaXD Music</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -23,7 +23,6 @@
             flex-direction: column;
         }
 
-        /* Header dengan Social Icons */
         .header {
             background: rgba(24, 24, 24, 0.95);
             backdrop-filter: blur(20px);
@@ -37,7 +36,6 @@
             z-index: 100;
         }
 
-        /* LOGO RYOTAXD */
         .logo-ryota {
             display: flex;
             align-items: center;
@@ -70,7 +68,6 @@
         @keyframes logoPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
         @keyframes xdBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 
-        /* SOCIAL ICONS Facebook & WhatsApp */
         .social-icons {
             display: flex;
             gap: 12px;
@@ -90,18 +87,249 @@
             position: relative;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            text-decoration: none;
         }
 
-        .social-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s;
+        .fb-btn { background: linear-gradient(135deg, #1877f2, #0e5a8a); color: white; }
+        .wa-btn { background: linear-gradient(135deg, #25d366, #128c7e); color: white; }
+
+        .search-container {
+            flex: 1;
+            max-width: 500px;
+            position: relative;
+            margin: 0 20px;
         }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px 14px 50px;
+            background: #181818;
+            border: 1px solid #333;
+            border-radius: 24px;
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            background: #212121;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px 25px;
+            overflow-y: auto;
+        }
+
+        .song-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .song-card {
+            background: #181818;
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .song-card:hover { background: #212121; border-color: #ff6b6b; }
+        .song-card.selected { background: rgba(255, 107, 107, 0.1); border-color: #ff6b6b; }
+
+        .thumbnail { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
+        .song-info h3 { font-size: 16px; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .song-meta { font-size: 12px; color: #aaa; }
+
+        .player-bar {
+            background: #181818;
+            border-top: 1px solid #333;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: #333;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .play-btn { background: #ff6b6b; width: 60px; height: 60px; font-size: 24px; }
+        .play-btn:disabled { background: #555; opacity: 0.6; cursor: not-allowed; }
+
+        .now-playing { flex: 1; min-width: 0; }
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 30px;
+            background: #222;
+            color: #fff;
+            transform: translateX(200%);
+            transition: 0.4s;
+            z-index: 1000;
+        }
+        .status.show { transform: translateX(0); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-ryota">
+            <span class="ryota-main">Ryota</span>
+            <span class="xd-glow">XD</span>
+        </div>
+        <div class="social-icons">
+            <a href="https://www.facebook.com/ryotaaaxd0" target="_blank" class="social-btn fb-btn"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://wa.me/6285890075730" target="_blank" class="social-btn wa-btn"><i class="fab fa-whatsapp"></i></a>
+        </div>
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input class="search-input" id="searchInput" placeholder="Cari lagu...">
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="song-grid" id="searchResults"></div>
+    </div>
+
+    <div class="player-bar">
+        <button class="control-btn" onclick="stopSong()"><i class="fas fa-stop"></i></button>
+        <button class="control-btn play-btn" id="playBtn" onclick="playSelected()" disabled><i class="fas fa-play"></i></button>
+        <div class="now-playing">
+            <div id="nowPlayingTitle" style="font-weight: 500;">Pilih lagu</div>
+            <div id="nowPlayingArtist" style="font-size: 13px; color: #aaa;">-</div>
+        </div>
+    </div>
+
+    <div id="status" class="status"></div>
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        let selectedSong = null;
+        const audio = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+
+        function showStatus(text) {
+            const el = document.getElementById('status');
+            el.textContent = text;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        async function searchSongs() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+            showStatus('🔍 Mencari...');
+            try {
+                const res = await fetch('/search', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({query})
+                });
+                const data = await res.json();
+                displayResults(data.results || []);
+            } catch (e) {
+                showStatus('❌ Gagal mencari');
+            }
+        }
+
+        function displayResults(songs) {
+            const container = document.getElementById('searchResults');
+            container.innerHTML = '';
+            songs.forEach(song => {
+                const card = document.createElement('div');
+                card.className = 'song-card';
+                card.onclick = () => {
+                    selectedSong = song;
+                    document.querySelectorAll('.song-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    playBtn.disabled = false;
+                    document.getElementById('nowPlayingTitle').textContent = song.title;
+                    document.getElementById('nowPlayingArtist').textContent = song.uploader;
+                };
+                card.innerHTML = `
+                    <img src="${song.thumbnail}" class="thumbnail">
+                    <div class="song-info">
+                        <h3>${song.title}</h3>
+                        <div class="song-meta">${song.uploader}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function playSelected() {
+            if (!selectedSong) return;
+            showStatus('⏳ Menyiapkan audio...');
+            playBtn.disabled = true;
+            playBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            try {
+                const res = await fetch('/play', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url: selectedSong.url})
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    const streamUrl = `/stream/${encodeURIComponent(data.filename)}`;
+                    audio.src = streamUrl;
+                    audio.play().catch(() => showStatus("⚠️ Klik lagi tombol Play"));
+                } else {
+                    showStatus('❌ ' + data.error);
+                }
+            } catch (e) {
+                showStatus('❌ Gagal memuat');
+            } finally {
+                playBtn.disabled = false;
+                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            }
+        }
+
+        function stopSong() {
+            audio.pause();
+            audio.currentTime = 0;
+            playBtn.innerHTML = '<i class="fas fa-play"></i>';
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') searchSongs();
+        });
+
+        audio.onplay = () => playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        audio.onpause = () => playBtn.innerHTML = '<i class="fas fa-play"></i>';
+    </script>
+</body>
+    </html>        }
 
         .social-btn:hover::before {
             left: 100%;
