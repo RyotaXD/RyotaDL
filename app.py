@@ -1,26 +1,29 @@
-from flask import Flask, render_template, request, jsonify, Response, send_file
+from flask import Flask, render_template, request, jsonify, Response
 import yt_dlp
 import os
-import glob
 import time
 from urllib.parse import unquote
 
 app = Flask(__name__)
 
+# Buat folder temp jika belum ada
+TEMP_FOLDER = "temp_audio"
+if not os.path.exists(TEMP_FOLDER):
+    os.makedirs(TEMP_FOLDER)
+
 class MusicPlayer:
     def __init__(self):
         self.current_info = {}
-        self.temp_files = []
     
     def search_youtube(self, query, max_results=10):
-        """Cari lagu di YouTube"""
         ydl_opts = {
             'quiet': True,
             'extract_flat': True,
+            'skip_download': True,
         }
-        
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                # Menambahkan 'ytsearch' untuk hasil pencarian yang lebih baik
                 info = ydl.extract_info(f"ytsearch{max_results}:{query}", download=False)
                 return [{
                     'title': entry.get('title', 'Unknown'),
@@ -30,44 +33,29 @@ class MusicPlayer:
                     'url': f"https://www.youtube.com/watch?v={entry['id']}",
                     'thumbnail': f"https://img.youtube.com/vi/{entry['id']}/mqdefault.jpg"
                 } for entry in info['entries']]
-        except:
+        except Exception as e:
+            print(f"Search error: {e}")
             return []
-    
-    def download_audio(self, url):
-        """Download audio dengan nama file sederhana"""
+
+    def get_audio_path(self, video_url):
+        """Mengambil info dan mendownload audio tanpa FFmpeg"""
         timestamp = int(time.time())
-        output_file = f"audio_{timestamp}.%(ext)s"
+        # Simpan di folder temp dengan nama yang aman
+        outtmpl = os.path.join(TEMP_FOLDER, f'audio_{timestamp}.%(ext)s')
         
         ydl_opts = {
-            'format': 'bestaudio/best',
-            'outtmpl': output_file,
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
+            'format': 'bestaudio/best', # Ambil format terbaik (biasanya m4a/webm)
+            'outtmpl': outtmpl,
             'quiet': True,
+            'no_warnings': True,
         }
         
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(url, download=True)
-                title = info.get('title', 'Unknown')
-                
-                # Cari file yang baru dibuat
-                files = glob.glob(f"audio_{timestamp}.*")
-                if files:
-                    audio_file = files[0]
-                    self.current_info = {
-                        'title': title,
-                        'file': audio_file,
-                        'url': url
-                    }
-                    self.temp_files.append(audio_file)
-                    return True, title, audio_file
-                return False, "File not found", None
+                info = ydl.extract_info(video_url, download=True)
+                filename = ydl.prepare_filename(info)
+                return True, info.get('title', 'Unknown'), filename
         except Exception as e:
-            print(f"Download error: {e}")
             return False, str(e), None
 
 player = MusicPlayer()
@@ -82,7 +70,6 @@ def search():
     query = data.get('query', '').strip()
     if not query:
         return jsonify({'error': 'Masukkan judul lagu!'})
-    
     results = player.search_youtube(query)
     return jsonify({'results': results})
 
@@ -94,14 +81,59 @@ def play():
     if not url:
         return jsonify({'error': 'URL tidak valid'}), 400
     
-    # Cleanup lama
-    for f in player.temp_files[:5]:  # Keep last 5
-        if os.path.exists(f):
+    # Pembersihan file lama (hapus file yang umurnya lebih dari 5 menit)
+    now = time.time()
+    for f in os.listdir(TEMP_FOLDER):
+        fpath = os.path.join(TEMP_FOLDER, f)
+        if os.stat(fpath).st_mtime < now - 300:
             try:
-                os.unlink(f)
-                player.temp_files.remove(f)
+                os.remove(fpath)
             except:
                 pass
+
+    success, title, filepath = player.get_audio_path(url)
+    
+    if success:
+        return jsonify({
+            'success': True,
+            'title': title,
+            'filename': os.path.basename(filepath)
+        })
+    else:
+        return jsonify({'error': "Gagal mengunduh audio: " + filepath}), 400
+
+@app.route('/stream/<filename>')
+def stream_audio(filename):
+    filename = unquote(filename)
+    filepath = os.path.join(TEMP_FOLDER, filename)
+    
+    if not os.path.exists(filepath):
+        return "File not found", 404
+
+    def generate():
+        with open(filepath, 'rb') as f:
+            while True:
+                chunk = f.read(1024 * 512) # 512KB chunks
+                if not chunk:
+                    break
+                yield chunk
+    
+    # Mendeteksi mimetype berdasarkan ekstensi file
+    mimetype = 'audio/mpeg'
+    if filename.endswith('.m4a'): mimetype = 'audio/mp4'
+    elif filename.endswith('.webm'): mimetype = 'audio/webm'
+
+    return Response(
+        generate(),
+        mimetype=mimetype,
+        headers={
+            'Accept-Ranges': 'bytes',
+            'Cache-Control': 'no-cache',
+        }
+    )
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)                pass
     
     success, title, filename = player.download_audio(url)
     
