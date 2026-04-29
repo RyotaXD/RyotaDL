@@ -7,6 +7,8 @@ app = Flask(__name__)
 
 # Gunakan folder /tmp agar aman di Render
 TEMP_FOLDER = "/tmp"
+if not os.path.exists(TEMP_FOLDER):
+    os.makedirs(TEMP_FOLDER)
 
 @app.route('/')
 def index():
