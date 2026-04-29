@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* KODE CSS KAMU MULAI DARI SINI */
+        /* CSS Styling */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Roboto', sans-serif; background: #0f0f0f; color: #fff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .header { background: rgba(24, 24, 24, 0.95); padding: 15px 25px; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 20px; }
@@ -18,7 +18,8 @@
         .fb-btn { background: #1877f2; }
         .wa-btn { background: #25d366; }
         .search-container { flex: 2; position: relative; max-width: 500px; }
-        .search-input { width: 100%; padding: 12px 20px 12px 45px; background: #181818; border: 1px solid #333; border-radius: 25px; color: #fff; }
+        .search-input { width: 100%; padding: 12px 20px 12px 45px; background: #181818; border: 1px solid #333; border-radius: 25px; color: #fff; outline: none; }
+        .search-input:focus { border-color: #ff6b6b; }
         .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa; }
         .main-content { flex: 1; padding: 20px; overflow-y: auto; }
         .song-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
@@ -27,8 +28,9 @@
         .song-card.selected { border-color: #ff6b6b; background: rgba(255, 107, 107, 0.1); }
         .thumbnail { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; }
         .player-bar { background: #181818; border-top: 1px solid #333; padding: 20px; display: flex; align-items: center; gap: 20px; }
-        .play-btn { width: 60px; height: 60px; border-radius: 50%; background: #ff6b6b; border: none; color: #fff; font-size: 24px; cursor: pointer; }
-        .status { position: fixed; top: 20px; right: 20px; background: #333; padding: 10px 20px; border-radius: 20px; transform: translateX(200%); transition: 0.5s; }
+        .play-btn { width: 60px; height: 60px; border-radius: 50%; background: #ff6b6b; border: none; color: #fff; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .play-btn:disabled { background: #555; cursor: not-allowed; }
+        .status { position: fixed; top: 25px; right: 25px; background: #333; padding: 12px 24px; border-radius: 30px; border: 1px solid #ff6b6b; transform: translateX(400px); transition: 0.4s; z-index: 1000; }
         .status.show { transform: translateX(0); }
     </style>
 </head>
@@ -37,11 +39,11 @@
         <div class="logo-ryota"><span class="ryota-main">Ryota</span>XD</div>
         <div class="search-container">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" id="searchInput" class="search-input" placeholder="Cari lagu...">
+            <input type="text" id="searchInput" class="search-input" placeholder="Cari judul lagu...">
         </div>
         <div class="social-icons">
-            <a href="#" class="social-btn fb-btn"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" class="social-btn wa-btn"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://www.facebook.com/ryotaaaxd0" target="_blank" class="social-btn fb-btn"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://wa.me/6285890075730" target="_blank" class="social-btn wa-btn"><i class="fab fa-whatsapp"></i></a>
         </div>
     </div>
 
@@ -52,7 +54,7 @@
     <div class="player-bar">
         <button id="playBtn" class="play-btn" onclick="playSelected()" disabled><i class="fas fa-play"></i></button>
         <div class="now-playing">
-            <div id="nowPlayingTitle">Pilih lagu</div>
+            <div id="nowPlayingTitle" style="font-weight: 600;">Pilih lagu</div>
             <div id="nowPlayingArtist" style="color: #aaa; font-size: 13px;">-</div>
         </div>
     </div>
@@ -61,7 +63,6 @@
     <div id="status" class="status"></div>
 
     <script>
-        // Logika JavaScript sama seperti sebelumnya
         let selectedSong = null;
         const audio = document.getElementById('audioPlayer');
         const playBtn = document.getElementById('playBtn');
@@ -70,55 +71,97 @@
             const s = document.getElementById('status');
             s.innerText = msg;
             s.classList.add('show');
-            setTimeout(() => s.classList.remove('show'), 3000);
+            setTimeout(() => s.classList.remove('show'), 4000);
         }
 
         async function searchSongs() {
-            const query = document.getElementById('searchInput').value;
+            const query = document.getElementById('searchInput').value.trim();
             if(!query) return;
-            showStatus("🔍 Mencari...");
-            const res = await fetch('/search', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({query})
-            });
-            const data = await res.json();
-            const container = document.getElementById('searchResults');
-            container.innerHTML = '';
-            data.results.forEach(song => {
-                const div = document.createElement('div');
-                div.className = 'song-card';
-                div.onclick = () => {
-                    selectedSong = song;
-                    document.querySelectorAll('.song-card').forEach(c => c.classList.remove('selected'));
-                    div.classList.add('selected');
-                    playBtn.disabled = false;
-                    document.getElementById('nowPlayingTitle').innerText = song.title;
-                };
-                div.innerHTML = `<img src="${song.thumbnail}" class="thumbnail"><div>${song.title}</div>`;
-                container.appendChild(div);
-            });
+            
+            showStatus("🔍 Sedang mencari...");
+            try {
+                const res = await fetch('/search', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({query})
+                });
+                const data = await res.json();
+                
+                const container = document.getElementById('searchResults');
+                container.innerHTML = '';
+                
+                if (data.results && data.results.length > 0) {
+                    data.results.forEach(song => {
+                        const div = document.createElement('div');
+                        div.className = 'song-card';
+                        div.onclick = () => {
+                            selectedSong = song;
+                            document.querySelectorAll('.song-card').forEach(c => c.classList.remove('selected'));
+                            div.classList.add('selected');
+                            playBtn.disabled = false;
+                            document.getElementById('nowPlayingTitle').innerText = song.title;
+                            document.getElementById('nowPlayingArtist').innerText = song.uploader;
+                        };
+                        div.innerHTML = `
+                            <img src="${song.thumbnail}" class="thumbnail">
+                            <div style="flex:1">
+                                <div style="font-size:15px; font-weight:500; margin-bottom:4px">${song.title}</div>
+                                <div style="font-size:12px; color:#aaa">${song.uploader}</div>
+                            </div>
+                        `;
+                        container.appendChild(div);
+                    });
+                } else {
+                    showStatus("❌ Lagu tidak ditemukan");
+                }
+            } catch (e) {
+                showStatus("❌ Terjadi kesalahan jaringan");
+            }
         }
 
         async function playSelected() {
             if(!selectedSong) return;
-            showStatus("⏳ Mendownload...");
-            const res = await fetch('/play', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({url: selectedSong.url})
-            });
-            const data = await res.json();
-            if(data.success) {
-                audio.src = `/stream/${encodeURIComponent(data.filename)}`;
-                audio.play();
-                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            
+            showStatus("⏳ Menyiapkan audio...");
+            playBtn.disabled = true;
+            playBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            try {
+                const res = await fetch('/play', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url: selectedSong.url})
+                });
+                const data = await res.json();
+                
+                if(data.success) {
+                    // Bagian yang kamu minta pasang:
+                    const streamUrl = `/stream/${encodeURIComponent(data.filename)}`;
+                    audio.src = streamUrl;
+                    audio.load(); // Paksa browser memuat ulang audio
+                    audio.play().then(() => {
+                        playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                        showStatus(`▶️ Memutar: ${data.title}`);
+                    }).catch(err => {
+                        showStatus("⚠️ Klik tombol play untuk memutar");
+                        playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    });
+                } else {
+                    showStatus("❌ Gagal mendownload: " + data.error);
+                }
+            } catch (e) {
+                showStatus("❌ Server sedang sibuk");
+            } finally {
+                playBtn.disabled = false;
             }
         }
 
         document.getElementById('searchInput').addEventListener('keypress', e => {
             if(e.key === 'Enter') searchSongs();
         });
+
+        audio.onpause = () => playBtn.innerHTML = '<i class="fas fa-play"></i>';
+        audio.onplay = () => playBtn.innerHTML = '<i class="fas fa-pause"></i>';
     </script>
 </body>
 </html>
