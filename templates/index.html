@@ -7,663 +7,118 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Roboto', 'Poppins', sans-serif;
-            background: #0f0f0f;
-            color: #fff;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .header {
-            background: rgba(24, 24, 24, 0.95);
-            backdrop-filter: blur(20px);
-            padding: 15px 25px;
-            border-bottom: 1px solid #333;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo-ryota {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-family: 'Poppins', sans-serif;
-            flex: 1;
-            animation: logoPulse 3s ease-in-out infinite;
-        }
-
-        .ryota-main {
-            font-size: 28px;
-            font-weight: 900;
-            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 50%, #48dbfb 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 25px rgba(255,107,107,0.6);
-        }
-
-        .xd-glow {
-            font-size: 24px;
-            font-weight: 900;
-            background: linear-gradient(45deg, #ff4757, #ff6b6b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: xdBounce 2s ease-in-out infinite;
-        }
-
-        @keyframes logoPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
-        @keyframes xdBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-
-        .social-icons {
-            display: flex;
-            gap: 12px;
-        }
-
-        .social-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            text-decoration: none;
-        }
-
-        .fb-btn { background: linear-gradient(135deg, #1877f2, #0e5a8a); color: white; }
-        .wa-btn { background: linear-gradient(135deg, #25d366, #128c7e); color: white; }
-
-        .search-container {
-            flex: 1;
-            max-width: 500px;
-            position: relative;
-            margin: 0 20px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 14px 20px 14px 50px;
-            background: #181818;
-            border: 1px solid #333;
-            border-radius: 24px;
-            color: #fff;
-            font-size: 16px;
-            transition: all 0.2s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #ff6b6b;
-            background: #212121;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #aaa;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 30px 25px;
-            overflow-y: auto;
-        }
-
-        .song-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .song-card {
-            background: #181818;
-            border-radius: 16px;
-            padding: 20px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            border: 1px solid transparent;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .song-card:hover { background: #212121; border-color: #ff6b6b; }
-        .song-card.selected { background: rgba(255, 107, 107, 0.1); border-color: #ff6b6b; }
-
-        .thumbnail { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
-        .song-info h3 { font-size: 16px; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-        .song-meta { font-size: 12px; color: #aaa; }
-
-        .player-bar {
-            background: #181818;
-            border-top: 1px solid #333;
-            padding: 15px 25px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .control-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: none;
-            background: #333;
-            color: #fff;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-
-        .play-btn { background: #ff6b6b; width: 60px; height: 60px; font-size: 24px; }
-        .play-btn:disabled { background: #555; opacity: 0.6; cursor: not-allowed; }
-
-        .now-playing { flex: 1; min-width: 0; }
-        .status {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 24px;
-            border-radius: 30px;
-            background: #222;
-            color: #fff;
-            transform: translateX(200%);
-            transition: 0.4s;
-            z-index: 1000;
-        }
+        /* KODE CSS KAMU MULAI DARI SINI */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Roboto', sans-serif; background: #0f0f0f; color: #fff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .header { background: rgba(24, 24, 24, 0.95); padding: 15px 25px; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 20px; }
+        .logo-ryota { flex: 1; display: flex; gap: 10px; font-weight: 900; font-size: 24px; }
+        .ryota-main { color: #ff6b6b; }
+        .social-icons { display: flex; gap: 10px; }
+        .social-btn { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; background: #333; transition: 0.3s; }
+        .fb-btn { background: #1877f2; }
+        .wa-btn { background: #25d366; }
+        .search-container { flex: 2; position: relative; max-width: 500px; }
+        .search-input { width: 100%; padding: 12px 20px 12px 45px; background: #181818; border: 1px solid #333; border-radius: 25px; color: #fff; }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa; }
+        .main-content { flex: 1; padding: 20px; overflow-y: auto; }
+        .song-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .song-card { background: #181818; padding: 15px; border-radius: 15px; cursor: pointer; display: flex; align-items: center; gap: 15px; border: 1px solid transparent; transition: 0.3s; }
+        .song-card:hover { border-color: #ff6b6b; background: #222; }
+        .song-card.selected { border-color: #ff6b6b; background: rgba(255, 107, 107, 0.1); }
+        .thumbnail { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; }
+        .player-bar { background: #181818; border-top: 1px solid #333; padding: 20px; display: flex; align-items: center; gap: 20px; }
+        .play-btn { width: 60px; height: 60px; border-radius: 50%; background: #ff6b6b; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+        .status { position: fixed; top: 20px; right: 20px; background: #333; padding: 10px 20px; border-radius: 20px; transform: translateX(200%); transition: 0.5s; }
         .status.show { transform: translateX(0); }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="logo-ryota">
-            <span class="ryota-main">Ryota</span>
-            <span class="xd-glow">XD</span>
-        </div>
-        <div class="social-icons">
-            <a href="https://www.facebook.com/ryotaaaxd0" target="_blank" class="social-btn fb-btn"><i class="fab fa-facebook-f"></i></a>
-            <a href="https://wa.me/6285890075730" target="_blank" class="social-btn wa-btn"><i class="fab fa-whatsapp"></i></a>
-        </div>
+        <div class="logo-ryota"><span class="ryota-main">Ryota</span>XD</div>
         <div class="search-container">
             <i class="fas fa-search search-icon"></i>
-            <input class="search-input" id="searchInput" placeholder="Cari lagu...">
+            <input type="text" id="searchInput" class="search-input" placeholder="Cari lagu...">
+        </div>
+        <div class="social-icons">
+            <a href="#" class="social-btn fb-btn"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-btn wa-btn"><i class="fab fa-whatsapp"></i></a>
         </div>
     </div>
 
     <div class="main-content">
-        <div class="song-grid" id="searchResults"></div>
+        <div id="searchResults" class="song-grid"></div>
     </div>
 
     <div class="player-bar">
-        <button class="control-btn" onclick="stopSong()"><i class="fas fa-stop"></i></button>
-        <button class="control-btn play-btn" id="playBtn" onclick="playSelected()" disabled><i class="fas fa-play"></i></button>
+        <button id="playBtn" class="play-btn" onclick="playSelected()" disabled><i class="fas fa-play"></i></button>
         <div class="now-playing">
-            <div id="nowPlayingTitle" style="font-weight: 500;">Pilih lagu</div>
-            <div id="nowPlayingArtist" style="font-size: 13px; color: #aaa;">-</div>
+            <div id="nowPlayingTitle">Pilih lagu</div>
+            <div id="nowPlayingArtist" style="color: #aaa; font-size: 13px;">-</div>
         </div>
     </div>
 
-    <div id="status" class="status"></div>
     <audio id="audioPlayer"></audio>
+    <div id="status" class="status"></div>
 
     <script>
+        // Logika JavaScript sama seperti sebelumnya
         let selectedSong = null;
         const audio = document.getElementById('audioPlayer');
         const playBtn = document.getElementById('playBtn');
 
-        function showStatus(text) {
-            const el = document.getElementById('status');
-            el.textContent = text;
-            el.classList.add('show');
-            setTimeout(() => el.classList.remove('show'), 3000);
+        function showStatus(msg) {
+            const s = document.getElementById('status');
+            s.innerText = msg;
+            s.classList.add('show');
+            setTimeout(() => s.classList.remove('show'), 3000);
         }
 
         async function searchSongs() {
-            const query = document.getElementById('searchInput').value.trim();
-            if (!query) return;
-            showStatus('🔍 Mencari...');
-            try {
-                const res = await fetch('/search', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({query})
-                });
-                const data = await res.json();
-                displayResults(data.results || []);
-            } catch (e) {
-                showStatus('❌ Gagal mencari');
-            }
-        }
-
-        function displayResults(songs) {
+            const query = document.getElementById('searchInput').value;
+            if(!query) return;
+            showStatus("🔍 Mencari...");
+            const res = await fetch('/search', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({query})
+            });
+            const data = await res.json();
             const container = document.getElementById('searchResults');
             container.innerHTML = '';
-            songs.forEach(song => {
-                const card = document.createElement('div');
-                card.className = 'song-card';
-                card.onclick = () => {
+            data.results.forEach(song => {
+                const div = document.createElement('div');
+                div.className = 'song-card';
+                div.onclick = () => {
                     selectedSong = song;
                     document.querySelectorAll('.song-card').forEach(c => c.classList.remove('selected'));
-                    card.classList.add('selected');
+                    div.classList.add('selected');
                     playBtn.disabled = false;
-                    document.getElementById('nowPlayingTitle').textContent = song.title;
-                    document.getElementById('nowPlayingArtist').textContent = song.uploader;
+                    document.getElementById('nowPlayingTitle').innerText = song.title;
                 };
-                card.innerHTML = `
-                    <img src="${song.thumbnail}" class="thumbnail">
-                    <div class="song-info">
-                        <h3>${song.title}</h3>
-                        <div class="song-meta">${song.uploader}</div>
-                    </div>
-                `;
-                container.appendChild(card);
+                div.innerHTML = `<img src="${song.thumbnail}" class="thumbnail"><div>${song.title}</div>`;
+                container.appendChild(div);
             });
         }
 
         async function playSelected() {
-            if (!selectedSong) return;
-            showStatus('⏳ Menyiapkan audio...');
-            playBtn.disabled = true;
-            playBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            
-            try {
-                const res = await fetch('/play', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({url: selectedSong.url})
-                });
-                const data = await res.json();
-                
-                if (data.success) {
-                    const streamUrl = `/stream/${encodeURIComponent(data.filename)}`;
-                    audio.src = streamUrl;
-                    audio.play().catch(() => showStatus("⚠️ Klik lagi tombol Play"));
-                } else {
-                    showStatus('❌ ' + data.error);
-                }
-            } catch (e) {
-                showStatus('❌ Gagal memuat');
-            } finally {
-                playBtn.disabled = false;
+            if(!selectedSong) return;
+            showStatus("⏳ Mendownload...");
+            const res = await fetch('/play', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({url: selectedSong.url})
+            });
+            const data = await res.json();
+            if(data.success) {
+                audio.src = `/stream/${encodeURIComponent(data.filename)}`;
+                audio.play();
                 playBtn.innerHTML = '<i class="fas fa-pause"></i>';
             }
         }
 
-        function stopSong() {
-            audio.pause();
-            audio.currentTime = 0;
-            playBtn.innerHTML = '<i class="fas fa-play"></i>';
-        }
-
         document.getElementById('searchInput').addEventListener('keypress', e => {
-            if (e.key === 'Enter') searchSongs();
+            if(e.key === 'Enter') searchSongs();
         });
-
-        audio.onplay = () => playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-        audio.onpause = () => playBtn.innerHTML = '<i class="fas fa-play"></i>';
-    </script>
-</body>
-    </html>        }
-
-        .social-btn:hover::before {
-            left: 100%;
-        }
-
-        .fb-btn {
-            background: linear-gradient(135deg, #1877f2, #0e5a8a);
-            color: white;
-        }
-
-        .fb-btn:hover {
-            transform: translateY(-3px) scale(1.1);
-            box-shadow: 0 8px 25px rgba(24,119,242,0.4);
-        }
-
-        .wa-btn {
-            background: linear-gradient(135deg, #25d366, #128c7e);
-            color: white;
-        }
-
-        .wa-btn:hover {
-            transform: translateY(-3px) scale(1.1);
-            box-shadow: 0 8px 25px rgba(37,211,102,0.4);
-        }
-
-        .search-container {
-            flex: 1;
-            max-width: 500px;
-            position: relative;
-            margin: 0 20px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 14px 20px 14px 50px;
-            background: #181818;
-            border: 1px solid #333;
-            border-radius: 24px;
-            color: #fff;
-            font-size: 16px;
-            transition: all 0.2s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #ff6b6b;
-            box-shadow: 0 0 0 3px rgba(255,107,107,0.1);
-            background: #212121;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #aaa;
-            font-size: 18px;
-            transition: color 0.2s ease;
-        }
-
-        /* Main Content - sama seperti sebelumnya */
-        .main-content {
-            flex: 1;
-            padding: 30px 25px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .section-title {
-            font-size: 28px;
-            font-weight: 500;
-            margin-bottom: 25px;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .song-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .song-card {
-            background: #181818;
-            border-radius: 16px;
-            padding: 24px;
-            cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .song-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, #ff6b6b, transparent);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .song-card:hover::before { transform: scaleX(1); }
-        .song-card:hover { background: #212121; border-color: #ff6b6b; transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-        .song-card.selected { background: linear-gradient(135deg, #1a1a2e, #16213e); border-color: #ff6b6b; box-shadow: 0 0 0 2px rgba(255,107,107,0.3), 0 25px 50px rgba(0,0,0,0.4); }
-
-        .song-card-top { display: flex; align-items: center; gap: 18px; margin-bottom: 16px; }
-        .thumbnail { width: 68px; height: 68px; border-radius: 12px; object-fit: cover; background: linear-gradient(45deg, #333, #444); box-shadow: 0 8px 20px rgba(0,0,0,0.3); transition: transform 0.3s ease; }
-        .song-card:hover .thumbnail { transform: scale(1.08); }
-        .song-info h3 { font-size: 18px; font-weight: 500; margin-bottom: 6px; line-height: 1.4; color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .song-meta { font-size: 14px; color: #b3b3b3; display: flex; align-items: center; gap: 10px; }
-        .duration { background: rgba(255,107,107,0.2); color: #ff6b6b; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-
-        /* Player Bar */
-        .player-bar {
-            background: #181818;
-            border-top: 1px solid #333;
-            padding: 20px 25px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            position: sticky;
-            bottom: 0;
-        }
-
-        .player-controls { display: flex; align-items: center; gap: 16px; flex: 1; }
-        .control-btn { width: 52px; height: 52px; border-radius: 50%; border: none; background: #333; color: #fff; font-size: 20px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
-        .control-btn:hover { background: #ff6b6b; transform: scale(1.1); }
-        .control-btn.play-btn { width: 64px; height: 64px; background: linear-gradient(135deg, #ff6b6b, #ff4757); font-size: 24px; box-shadow: 0 8px 25px rgba(255,107,107,0.4); }
-        .control-btn.play-btn:hover { background: linear-gradient(135deg, #ff4757, #ff3742); transform: scale(1.12); }
-        .now-playing { flex: 1; min-width: 0; padding: 0 20px; }
-        .now-playing-title { font-size: 16px; font-weight: 500; color: #fff; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .now-playing-artist { font-size: 13px; color: #b3b3b3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* Status Toast */
-        .status { position: fixed; top: 25px; right: 25px; background: rgba(24,24,24,0.95); backdrop-filter: blur(15px); padding: 16px 24px; border-radius: 25px; font-size: 15px; font-weight: 500; border: 1px solid #333; transform: translateX(400px); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 200; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-        .status.show { transform: translateX(0); }
-        .status.playing { border-color: #ff6b6b; background: rgba(255,107,107,0.15); color: #ff6b6b; }
-
-        @media (max-width: 768px) {
-            .header { padding: 12px 20px; gap: 15px; }
-            .logo-ryota { gap: 8px; flex: initial; }
-            .ryota-main { font-size: 24px; }
-            .xd-glow { font-size: 20px; }
-            .social-icons { gap: 8px; }
-            .social-btn { width: 40px; height: 40px; font-size: 18px; }
-            .song-grid { grid-template-columns: 1fr; padding: 0 15px; }
-        }
-    </style>
-</head>
-<body>
-    <!-- Header dengan RyotaXD + Social -->
-    <div class="header">
-        <div class="logo-ryota">
-            <span class="ryota-main">Ryota</span>
-            <span class="xd-glow">XD</span>
-        </div>
-        
-        <div class="social-icons">
-            <a href="https://www.facebook.com/ryotaaaxd0" target="_blank" class="social-btn fb-btn" title="Facebook">
-                <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="https://wa.me/6285890075730" target="_blank" class="social-btn wa-btn" title="WhatsApp">
-                <i class="fab fa-whatsapp"></i>
-            </a>
-        </div>
-        
-        <div class="search-container">
-            <i class="fas fa-search search-icon"></i>
-            <input class="search-input" id="searchInput" placeholder="Cari lagu, artis...">
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <h2 class="section-title">
-            <i class="fas fa-music"></i>
-            Hasil Pencarian
-        </h2>
-        <div class="song-grid" id="searchResults"></div>
-    </div>
-
-    <!-- Player -->
-    <div class="player-bar">
-        <button class="control-btn" onclick="stopSong()" title="Stop">
-            <i class="fas fa-stop-circle"></i>
-        </button>
-        <button class="control-btn play-btn" id="playBtn" onclick="playSelected()" disabled title="Play">
-            <i class="fas fa-play"></i>
-        </button>
-        <div class="now-playing">
-            <div class="now-playing-title" id="nowPlayingTitle">Pilih lagu</div>
-            <div class="now-playing-artist" id="nowPlayingArtist">-</div>
-        </div>
-    </div>
-
-    <div id="status" class="status">Selamat datang di RyotaXD Music! ðŸŽµ</div>
-    <audio id="audioPlayer"></audio>
-
-    <script>
-        // SCRIPT SAMA seperti sebelumnya - copy dari response sebelumnya
-        let selectedSong = null;
-        const audio = document.getElementById('audioPlayer');
-        const resultsDiv = document.getElementById('searchResults');
-        const statusEl = document.getElementById('status');
-        const playBtn = document.getElementById('playBtn');
-        const nowPlayingTitleEl = document.getElementById('nowPlayingTitle');
-        const nowPlayingArtistEl = document.getElementById('nowPlayingArtist');
-
-        function showStatus(text, type = '') {
-            statusEl.textContent = text;
-            statusEl.className = `status ${type} show`;
-            setTimeout(() => statusEl.classList.remove('show'), 3500);
-        }
-
-        async function searchSongs() {
-            const query = document.getElementById('searchInput').value.trim();
-            if (!query) return showStatus('Masukkan judul lagu!', 'error');
-            showStatus('ðŸ” Mencari lagu...', 'loading');
-            playBtn.disabled = true;
-            try {
-                const res = await fetch('/search', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({query})
-                });
-                const data = await res.json();
-                displayResults(data.results || []);
-            } catch (e) {
-                showStatus('âŒ Koneksi bermasalah', 'error');
-            }
-        }
-
-        function displayResults(songs) {
-            resultsDiv.innerHTML = '';
-            if (!songs.length) {
-                showStatus('âŒ Tidak ada hasil', 'error');
-                return;
-            }
-            songs.slice(0, 20).forEach(song => {
-                const card = document.createElement('div');
-                card.className = 'song-card';
-                card.onclick = () => selectSong(song, card);
-                card.innerHTML = `
-                    <div class="song-card-top">
-                        <img src="${song.thumbnail}" class="thumbnail" onerror="this.style.background='linear-gradient(45deg,#333,#555)'">
-                        <div class="song-info">
-                            <h3>${song.title}</h3>
-                            <div class="song-meta">
-                                <i class="fas fa-user"></i>
-                                <span>${song.uploader}</span>
-                                <span class="duration">${formatDuration(song.duration)}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                resultsDiv.appendChild(card);
-            });
-            showStatus(`${songs.length} lagu ditemukan`, '');
-        }
-
-        function selectSong(song, card) {
-            selectedSong = song;
-            document.querySelectorAll('.song-card').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            playBtn.disabled = false;
-            nowPlayingTitleEl.textContent = song.title;
-            nowPlayingArtistEl.textContent = song.uploader;
-            showStatus(`Siap diputar: ${song.title.substring(0,30)}${song.title.length>30?'...':''}`);
-        }
-
-        async function playSelected() {
-            if (!selectedSong) return;
-            showStatus('â³ Mengunduh...', 'loading');
-            playBtn.disabled = true;
-            playBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            try {
-                const res = await fetch('/play', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({url: selectedSong.url})
-                });
-                const data = await res.json();
-                if (data.success) {
-                    const streamUrl = `/stream/${encodeURIComponent(data.filepath)}`;
-                    audio.src = streamUrl;
-                    audio.play();
-                    showStatus(`â–¶ï¸ ${data.title.substring(0,25)}...`, 'playing');
-                } else {
-                    showStatus(`âŒ ${data.error}`, 'error');
-                }
-            } catch (e) {
-                showStatus('âŒ Gagal memuat lagu', 'error');
-            } finally {
-                playBtn.disabled = false;
-                if (!audio.paused) playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                else playBtn.innerHTML = '<i class="fas fa-play"></i>';
-            }
-        }
-
-        function stopSong() {
-            audio.pause();
-            audio.src = '';
-            playBtn.disabled = true;
-            playBtn.innerHTML = '<i class="fas fa-play"></i>';
-            nowPlayingTitleEl.textContent = 'Pilih lagu';
-            nowPlayingArtistEl.textContent = '-';
-            document.querySelectorAll('.song-card').forEach(c => c.classList.remove('selected'));
-            showStatus('â¹ï¸ Berhenti');
-        }
-
-        function formatDuration(s) {
-            if (!s) return 'LIVE';
-            const m = Math.floor(s / 60);
-            const sec = s % 60;
-            return `${m}:${sec.toString().padStart(2, '0')}`;
-        }
-
-        document.getElementById('searchInput').addEventListener('keypress', e => {
-            if (e.key === 'Enter') searchSongs();
-        });
-
-        audio.addEventListener('play', () => playBtn.innerHTML = '<i class="fas fa-pause"></i>');
-        audio.addEventListener('pause', () => playBtn.innerHTML = '<i class="fas fa-play"></i>');
-        audio.addEventListener('ended', stopSong);
-
-        setTimeout(() => showStatus('Tekan Enter untuk cari lagu ðŸŽµ', ''), 1000);
     </script>
 </body>
 </html>
