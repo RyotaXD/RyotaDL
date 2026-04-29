@@ -1,65 +1,86 @@
 import os
+import uuid
 import yt_dlp
-from flask import Flask, render_template, request, jsonify
+import subprocess
+from flask import Flask, render_template, request, jsonify, url_for
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
 
 app = Flask(__name__)
+console = Console()
 
-# Konfigurasi YTDL diperkuat (Anti-Blokir & Direct Stream)
-YTDL_CFG = {
-    'format': 'bestaudio/best',
-    'quiet': True,
-    'no_warnings': True,
-    'nocheckcertificate': True,
-    'default_search': 'ytsearch5',
-    'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    'referer': 'https://www.google.com/'
-}
+# Path penyimpanan di Termux
+VAULT = 'static/downloads'
+if not os.path.exists(VAULT): os.makedirs(VAULT)
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+def ryota_engine(url):
+    uid = str(uuid.uuid4())[:6]
+    filename = f'Ryee_{uid}.mp4'
+    path_template = os.path.join(VAULT, filename)
+    if "facebook.com/share/" in url:
+        try:
+            import requests
+            res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
+            url = res.url
+        except: pass
 
-@app.route('/search', methods=['POST'])
-def search():
-    data = request.json
-    query = data.get('query', '').strip()
-    if not query:
-        return jsonify({'results': []})
-    
+    ydl_opts = {
+        'quiet': True,
+        'no_warnings': True,
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'merge_output_format': 'mp4',
+        'outtmpl': path_template,
+        'nocheckcertificate': True,
+        'external_downloader': 'aria2c',
+        'external_downloader_args': ['-x', '16', '-s', '16', '-k', '1M'],
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Referer': 'https://www.facebook.com/',
+        },
+    }
+
     try:
-        with yt_dlp.YoutubeDL(YTDL_CFG) as ydl:
-            # Mencari 5 hasil sesuai logika you.py
-            info = ydl.extract_info(f"ytsearch5:{query}", download=False)
-            if not info or 'entries' not in info:
-                return jsonify({'results': []})
-                
-            results = [{
-                'title': e.get('title', 'Unknown'),
-                'url': e.get('webpage_url') or f"https://www.youtube.com/watch?v={e.get('id')}",
-                'id': e.get('id'),
-                'thumbnail': f"https://img.youtube.com/vi/{e.get('id')}/mqdefault.jpg",
-                'uploader': e.get('uploader', 'Unknown'),
-                'duration': e.get('duration_string', '0:00')
-            } for e in info['entries']]
-            return jsonify({'results': results})
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            title = info.get('title', 'Unknown Title')
+            table = Table(title="[bold green]Download Berhasil[/bold green]")
+            table.add_column("Property", style="cyan")
+            table.add_column("Value", style="white")
+            table.add_row("Judul", title[:40])
+            table.add_row("File", filename)
+            console.print(table)
+            return filename
     except Exception as e:
-        return jsonify({'error': str(e), 'results': []}), 500
+        console.print(f"[bold red]!! FUSION ERROR: {e}[/bold red]")
+        return None
 
-@app.route('/get_stream_url', methods=['POST'])
-def get_stream_url():
-    video_url = request.json.get('url')
-    try:
-        # Mengambil link audio langsung (Direct Streaming)
-        with yt_dlp.YoutubeDL(YTDL_CFG) as ydl:
-            info = ydl.extract_info(video_url, download=False)
-            stream_url = info.get('url') 
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        url = request.form.get('url')
+        console.print(f"[bold #a78bfa][*] Web Request Link:[/bold #a78bfa] [dim]{url}[/dim]\n")
+        filename = ryota_engine(url)
+        if filename:
             return jsonify({
                 'success': True,
-                'stream_url': stream_url,
-                'title': info.get('title')
+                'video_url': url_for('static', filename=f'downloads/{filename}')
             })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Gagal! FB Memblokir Akses. Coba Mode Pesawat! ðŸ˜ˆ'
+            })
+    return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run()
+    os.system('clear')
+    console.print(Panel.fit(
+        "[bold #8b5cf6]RYEEDL WEB SERVER V2[/bold #8b5cf6][dim]\nDownloader Video",
+        title="[bold white]SYSTEM READY[/bold white]",
+        subtitle="Created by [bold cyan]Ryee[/bold cyan] ðŸ˜ˆ",
+        border_style="#6d28d9"
+    ))
+    console.print(f"\n[yellow][!] Akses web di: [bold]http://localhost:5000[/bold][/yellow]\n")
+    app.run(host='0.0.0.0', port=5000)
+    
