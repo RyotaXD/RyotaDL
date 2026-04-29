@@ -3,3 +3,4 @@ yt-dlp
 gunicorn
 requests
 urllib3
+rich
