@@ -74,13 +74,5 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    os.system('clear')
-    console.print(Panel.fit(
-        "[bold #8b5cf6]RYEEDL WEB SERVER V2[/bold #8b5cf6][dim]\nDownloader Video",
-        title="[bold white]SYSTEM READY[/bold white]",
-        subtitle="Created by [bold cyan]Ryee[/bold cyan] ðŸ˜ˆ",
-        border_style="#6d28d9"
-    ))
-    console.print(f"\n[yellow][!] Akses web di: [bold]http://localhost:5000[/bold][/yellow]\n")
-    app.run(host='0.0.0.0', port=5000)
+    app.run()
     
