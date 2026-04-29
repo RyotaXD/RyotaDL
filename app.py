@@ -161,9 +161,4 @@ def cleanup():
     return jsonify({'cleaned': count})
 
 if __name__ == '__main__':
-    # Initial cleanup
-    for f in glob.glob('audio_*'):
-        if os.path.exists(f):
-            os.unlink(f)
-    print("🎵 Music Player Ready! http://localhost:5000")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run()
