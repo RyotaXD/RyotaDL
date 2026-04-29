@@ -69,7 +69,7 @@ def stream(filename):
     return Response(generate(), mimetype='audio/mpeg')
 
 if __name__ == '__main__':
-    app.run()        })
+    app.run()
     else:
         return jsonify({'error': "Gagal mengunduh audio: " + filepath}), 400
 
@@ -104,7 +104,7 @@ def stream_audio(filename):
     )
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)                pass
+    app.run(debug=True, host='0.0.0.0', port=5000)
     
     success, title, filename = player.download_audio(url)
     
