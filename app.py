@@ -37,16 +37,13 @@ def search():
 def play():
     data = request.json
     url = data.get('url')
-    # Nama file tetap simpel di /tmp
     outtmpl = os.path.join(TEMP_FOLDER, 'audio.%(ext)s')
-    
     ydl_opts = {
         'format': 'bestaudio/best',
         'outtmpl': outtmpl,
         'quiet': True,
         'noplaylist': True
     }
-    
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
@@ -65,13 +62,7 @@ def stream(filename):
         with open(filepath, 'rb') as f:
             while chunk := f.read(1024*512):
                 yield chunk
-    
     return Response(generate(), mimetype='audio/mpeg')
-
-if __name__ == '__main__':
-    app.run()
-    else:
-        return jsonify({'error': "Gagal mengunduh audio: " + filepath}), 400
 
 @app.route('/stream/<filename>')
 def stream_audio(filename):
@@ -88,12 +79,9 @@ def stream_audio(filename):
                 if not chunk:
                     break
                 yield chunk
-    
-    # Mendeteksi mimetype berdasarkan ekstensi file
     mimetype = 'audio/mpeg'
     if filename.endswith('.m4a'): mimetype = 'audio/mp4'
     elif filename.endswith('.webm'): mimetype = 'audio/webm'
-
     return Response(
         generate(),
         mimetype=mimetype,
@@ -101,13 +89,8 @@ def stream_audio(filename):
             'Accept-Ranges': 'bytes',
             'Cache-Control': 'no-cache',
         }
-    )
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
-    
+    )    
     success, title, filename = player.download_audio(url)
-    
     if success:
         return jsonify({
             'success': True,
@@ -131,7 +114,6 @@ def stream_audio(filename):
                     if not data:
                         break
                     yield data
-    
     return Response(
         generate(),
         mimetype='audio/mpeg',
