@@ -1,1 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RyeeDL - Video Downloader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+        }
 
+        .glass-card {
+            background: rgba(18, 18, 18, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        }
+
+        .neon-border:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-grad {
+            background: linear-gradient(90deg, #6d28d9 0%, #8b5cf6 100%);
+            transition: 0.3s;
+        }
+
+        .btn-grad:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(109, 40, 217, 0.4);
+        }
+
+        /* Animasi Loading Bar */
+        .progress-container {
+            height: 6px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #c026d3, #8b5cf6);
+            transition: width 0.4s ease;
+        }
+
+        .step-icon {
+            background: rgba(139, 92, 246, 0.1);
+            color: #a78bfa;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="text-center mb-10">
+        <h1 class="text-5xl font-extrabold tracking-tighter mb-2 italic">
+            RYEE<span class="text-purple-500 underline decoration-double">DL</span> ðŸ˜ˆ
+        </h1>
+        <p class="text-gray-400 font-light">Downloader Video FB, IG, YT </p>
+    </div>
+
+    <div class="glass-card w-full max-w-2xl rounded-3xl p-6 md:p-10">
+        <form id="dlForm" class="space-y-4">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="fas fa-link text-gray-500"></i>
+                </div>
+                <input type="text" id="urlInput" placeholder="Tempel tautan video di sini..." 
+                       class="w-full bg-black border border-gray-800 rounded-2xl py-5 pl-12 pr-4 text-white focus:outline-none neon-border transition-all">
+            </div>
+            <button type="submit" id="btnAction" class="w-full btn-grad py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-2">
+                <span>DOWNLOAD</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <div id="loadingState" class="hidden mt-8 space-y-4">
+            <div class="flex justify-between items-center text-sm">
+                <span id="statusMsg" class="animate-pulse">Menghubungkan ke server...</span>
+                <span id="percentText">0%</span>
+            </div>
+            <div class="progress-container">
+                <div id="pBar" class="progress-bar"></div>
+            </div>
+        </div>
+
+        <div id="resultArea" class="hidden mt-8">
+            <div class="rounded-2xl overflow-hidden border border-gray-800 bg-black">
+                <video id="videoPreview" controls class="w-full h-auto">
+                    Your browser does not support the video tag.
+                </video>
+                <div class="p-5 flex flex-col gap-3">
+                    <h3 id="videoTitle" class="font-semibold text-gray-300 text-sm truncate">Video Berhasil Diekstrak</h3>
+                    <div class="flex gap-2">
+                        <a id="downloadBtn" href="#" download class="flex-1 bg-green-600 hover:bg-green-500 py-3 rounded-xl text-center font-bold transition">
+                            <i class="fas fa-download mr-2"></i>SIMPAN KE GALERI
+                        </a>
+                        <button onclick="window.location.reload()" class="px-5 bg-gray-800 hover:bg-gray-700 rounded-xl transition">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 w-full max-w-4xl text-center">
+        <div class="p-4">
+            <div class="w-12 h-12 rounded-full step-icon flex items-center justify-center mx-auto mb-4 font-bold">1</div>
+            <h4 class="font-bold mb-1">Salin Link</h4>
+            <p class="text-xs text-gray-500">Salin link video dari Facebook, Reels, atau YouTube.</p>
+        </div>
+        <div class="p-4">
+            <div class="w-12 h-12 rounded-full step-icon flex items-center justify-center mx-auto mb-4 font-bold">2</div>
+            <h4 class="font-bold mb-1">Tempel & Klik</h4>
+            <p class="text-xs text-gray-500">Tempel di kotak atas dan klik tombol download.</p>
+        </div>
+        <div class="p-4">
+            <div class="w-12 h-12 rounded-full step-icon flex items-center justify-center mx-auto mb-4 font-bold">3</div>
+            <h4 class="font-bold mb-1">Selesai</h4>
+            <p class="text-xs text-gray-500">Video siap diputar atau disimpan ke perangkat.</p>
+        </div>
+    </div>
+
+    <footer class="mt-20 text-gray-600 text-xs tracking-widest uppercase">
+        &copy; 2026 RYOTA PROJECTS &bull; POWERED BY YT-DLP
+    </footer>
+
+    <script>
+        const form = document.getElementById('dlForm');
+        const urlInput = document.getElementById('urlInput');
+        const loadingState = document.getElementById('loadingState');
+        const resultArea = document.getElementById('resultArea');
+        const pBar = document.getElementById('pBar');
+        const percentText = document.getElementById('percentText');
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            if (!urlInput.value) return alert("Tempel link dulu, Ryota! ðŸ˜ˆ");
+
+            // Reset & Show Loading
+            resultArea.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            form.classList.add('opacity-40', 'pointer-events-none');
+
+            // Fake Progress Animation
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 95) clearInterval(interval);
+                width += (100 - width) * 0.1;
+                pBar.style.width = width + '%';
+                percentText.innerText = Math.floor(width) + '%';
+            }, 500);
+
+            try {
+                const formData = new FormData();
+                formData.append('url', urlInput.value);
+
+                const response = await fetch('/', { method: 'POST', body: formData });
+                const data = await response.json();
+
+                clearInterval(interval);
+                pBar.style.width = '100%';
+                percentText.innerText = '100%';
+
+                if (data.success) {
+                    setTimeout(() => {
+                        loadingState.classList.add('hidden');
+                        resultArea.classList.remove('hidden');
+                        document.getElementById('videoPreview').src = data.video_url;
+                        document.getElementById('downloadBtn').href = data.video_url;
+                    }, 800);
+                } else {
+                    alert("Gagal: " + data.message);
+                    window.location.reload();
+                }
+            } catch (err) {
+                alert("Server Error! Pastikan Termux tetap menyala.");
+                window.location.reload();
+            }
+        };
+    </script>
+</body>
+</html>
+          
